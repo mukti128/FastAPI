@@ -9,10 +9,11 @@ router = APIRouter()
 
 @router.post(
     "/", 
-    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
     responses={
+        200: {"description": "User registered successfully."},
         400: {"description": "Username or email already registered"},
-        500: {"description": "Internal server error"}
+        422: {"description": "Validation error"}
     }
 )
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -24,7 +25,9 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST, 
             detail="Username or email already registered"
         )
-    return create_user(db, user)
+    
+    create_user(db, user)
+    return {"message": "User registered successfully."}
     
 @router.get("/", response_model=list[UserResponse])
 def list_users(db: Session = Depends(get_db)):

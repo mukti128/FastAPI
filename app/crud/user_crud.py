@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.user import User
-from app.schemas.user_schema import UserCreate
+from app.schemas.user_schema import UserCreate, UserLogin
 import hashlib
 
 def get_password_hash(password: str) -> str:
@@ -21,6 +21,10 @@ def create_user(db: Session, user: UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def user_login(db: Session, request: UserLogin):
+    hashed_password = get_password_hash(request.password)
+    
 
 def get_users(db: Session, skip: int = 0, limit: int = 10):
     return db.query(User).offset(skip).limit(limit).all()

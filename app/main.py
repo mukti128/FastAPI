@@ -6,6 +6,3 @@ app = FastAPI(title="Growth Seeker Academy")
 
 app.include_router(users_route.router, prefix="/users", tags=["Users"])
 
-@app.get("/")
-def root():
-    return {"message": "API is running!"}
