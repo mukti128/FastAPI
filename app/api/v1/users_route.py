@@ -4,6 +4,8 @@ from app.models.user import User
 from app.schemas.user_schema import UserCreate, UserLogin, UserResponse, LoginResponse
 from app.crud.user_crud import create_user, get_users, user_login
 from app.core.database import get_db
+from app.core.security import get_current_user, bearer_scheme
+from app.core.token_store import add_to_blacklist
 
 router = APIRouter()
 
@@ -52,6 +54,15 @@ def login(request: UserLogin, db: Session = Depends(get_db)):
         "message": "Login successful",
         "data": result
     }
+
+#logout user
+@router.post(
+        "/logout",
+        status_code=status.HTTP_200_OK
+)
+def logout(token: str = Depends(bearer_scheme), user: dict = Depends(get_current_user)):
+    add_to_blacklist(token.credentials)
+    return {"message": "Logout successful."}
 
 #get all user
 @router.get("/", response_model=list[UserResponse])
