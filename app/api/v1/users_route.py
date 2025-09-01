@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.models.user import User
-from app.schemas.user_schema import UserCreate, UserResponse
-from app.crud.user_crud import create_user, get_users
+from app.schemas.user_schema import UserCreate, UserLogin, UserResponse, LoginResponse
+from app.crud.user_crud import create_user, get_users, user_login
 from app.core.database import get_db
 
 router = APIRouter()
 
+#register user
 @router.post(
-    "/", 
+    "/register", 
     status_code=status.HTTP_200_OK,
     responses={
         200: {"description": "User registered successfully."},
@@ -29,6 +30,30 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     create_user(db, user)
     return {"message": "User registered successfully."}
     
+#login user
+@router.post(
+    "/login",
+    response_model=LoginResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"description": "Login successful"},
+        401: {"description": "Invalid email or password"},
+        422: {"description": "Validation error"},
+    }
+)
+def login(request: UserLogin, db: Session = Depends(get_db)):
+    result = user_login(db, request)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    return {
+        "message": "Login successful",
+        "data": result
+    }
+
+#get all user
 @router.get("/", response_model=list[UserResponse])
 def list_users(db: Session = Depends(get_db)):
     return get_users(db)
